@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @AllArgsConstructor
-public class DailyTask {
+public class DailyTask   {
     private String id;
     private String name;
     private String description;
