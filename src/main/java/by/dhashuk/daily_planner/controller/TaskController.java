@@ -1,62 +1,81 @@
 package by.dhashuk.daily_planner.controller;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import by.dhashuk.daily_planner.dto.PageDTO;
 import by.dhashuk.daily_planner.entity.DailyTask;
-import by.dhashuk.daily_planner.service.DaskTaskService;
+import by.dhashuk.daily_planner.service.DailyTaskService;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
-
-
-
 @RestController
+@RequestMapping("/dailytask")
 public class TaskController {
-    @Autowired
-    public DaskTaskService dailyService;
 
-    @GetMapping("/dailytask")
-    public List<DailyTask> todoAllDailyList() {
-        //TODO add pagination
-        return dailyService.getAllDailyList();
+    public final DailyTaskService dailyService;
+
+    public TaskController(DailyTaskService dailyService) {
+        this.dailyService = dailyService;
     }
 
-    @GetMapping("/dailytask/{id}")
-    public DailyTask geDailyTaskbyId(@PathVariable String id) {
-        return dailyService.getTaskById(id);
+    @GetMapping("/hello/{name}")
+    public String helloString(@PathVariable String name) {
+        return "Hello, " + name + "!";
     }
 
-    @PostMapping("/dailytask")
-    public String postMethodName(@RequestBody String entity) {
-        //TODO: process POST request
-        throw new UnsupportedOperationException("Create task Unsupported!");
+    @GetMapping // all task
+    public ResponseEntity<PageDTO<DailyTask>> todoAllDailyList(@RequestParam Pageable pageable) {
+        var tasks = dailyService.getAllDailyList();
+        return ResponseEntity.ok(tasks);
+
     }
 
-    @PutMapping("/dailytask/{id}")
-    public String updateDailyTask(@PathVariable String id, @RequestBody String entity) {
-        //TODO: process PUT request
-        throw new UnsupportedOperationException("Update all task Unsupported!");
+    @GetMapping("/{id}") // get one task by Id
+    public ResponseEntity<DailyTask> geDailyTaskbyId(@PathVariable Integer id) {
+        Optional<DailyTask> task = dailyService.getTaskById(id); // add DailyTaskDTO
+        return task.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PatchMapping("/dailytask/{id}")
-    public DailyTask updatePartOfDailyTask(@PathVariable String id){
-        //TODO: process Patch request
-        throw new UnsupportedOperationException("Update part of task Unsupported!");
+    @PostMapping("/dailytask") // create daily task
+    public ResponseEntity<DailyTask> postMethodName(@RequestBody DailyTask dailyTask) {
+        Optional<DailyTask> createdTask = dailyService.createDailyTask(dailyTask);
+        return createdTask.map(task -> ResponseEntity.status(HttpStatus.CREATED).body(task))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
-    @DeleteMapping("/dailytask/{id}")
-    public void removeTask(@PathVariable String id){
-        //TODO: process Delete request
-        throw new UnsupportedOperationException("Remove task Unsupported!");
+    @PutMapping("/dailytask/{id}") // update task all information - rewrite entity
+    public ResponseEntity<DailyTask> updateDailyTask(@PathVariable String id, @RequestBody String entity) {
+        return dailyService.updateDailyTask(id, entity);
     }
-    
-    
+
+    @PatchMapping("/dailytask/{id}") // update task only some fields
+    public ResponseEntity<DailyTask> updatePartOfDailyTask(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        return dailyService.updateDailyTask(id, updates);
+    }
+
+    @DeleteMapping("/dailytask/{id}") // remove taks by id
+    public ResponseEntity<Void> removeTask(@PathVariable String id) {
+        if (!dailyService.removeDailyTask(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
+    }
+
 }
