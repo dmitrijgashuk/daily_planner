@@ -1,5 +1,6 @@
 package by.dhashuk.daily_planner.controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,15 +38,20 @@ public class TaskController {
         return "Hello, " + name + "!";
     }
 
-    @GetMapping // all task
-    public ResponseEntity<PageDTO<DailyTask>> todoAllDailyList(@RequestParam Pageable pageable) {
-        var tasks = dailyService.getAllDailyList();
-        return ResponseEntity.ok(tasks);
+    // @GetMapping // all task
+    // public ResponseEntity<PageDTO<DailyTask>> todoAllDailyList(@RequestParam Pageable pageable) {
+    //     var tasks = dailyService.getAllDailyList();
+    //     return ResponseEntity.ok(tasks);
+    // }
 
+    @GetMapping("/all")
+    public List<DailyTask> getMethodName() {
+        return dailyService.allTasks();
     }
 
+
     @GetMapping("/{id}") // get one task by Id
-    public ResponseEntity<DailyTask> geDailyTaskbyId(@PathVariable Integer id) {
+    public ResponseEntity<DailyTask> geDailyTaskbyId(@PathVariable Long id) {
         Optional<DailyTask> task = dailyService.getTaskById(id); // add DailyTaskDTO
         return task.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
