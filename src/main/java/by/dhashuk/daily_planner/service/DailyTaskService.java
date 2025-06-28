@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
 import by.dhashuk.daily_planner.entity.DailyTask;
@@ -50,6 +51,16 @@ public class DailyTaskService {
         }
         repository.deleteById(id);
         return true;
+    }
+
+    @Transactional
+    public boolean removeDailyTask (DailyTask dailyTask){
+        try {
+            repository.delete(dailyTask);
+            return true;    
+        } catch (IllegalArgumentException | OptimisticLockingFailureException e) {
+            return false;
+        }
     }
 
     @Transactional

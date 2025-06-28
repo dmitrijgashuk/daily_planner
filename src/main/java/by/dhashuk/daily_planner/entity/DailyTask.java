@@ -75,4 +75,51 @@ public class DailyTask   {
         this.isCompleted = isCompleted;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((description == null) ? 0 : description.hashCode());
+        result = prime * result + ((estimatedDuration == null) ? 0 : estimatedDuration.hashCode());
+        result = prime * result + ((plannedTime == null) ? 0 : plannedTime.hashCode());
+        result = prime * result + (isCompleted ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DailyTask other = (DailyTask) obj;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (description == null) {
+            if (other.description != null)
+                return false;
+        } else if (!description.equals(other.description))
+            return false;
+        if (estimatedDuration == null) {
+            if (other.estimatedDuration != null)
+                return false;
+        } else if (!estimatedDuration.equals(other.estimatedDuration))
+            return false;
+        if (plannedTime == null) {
+            if (other.plannedTime != null)
+                return false;
+        } else if (!plannedTime.equals(other.plannedTime))
+            return false;
+        if (isCompleted != other.isCompleted)
+            return false;
+        return true;
+    }
+
+    
 }
