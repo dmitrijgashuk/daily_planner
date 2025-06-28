@@ -19,7 +19,7 @@ public class DailyTaskService {
 
     // find task by id - if id is null throw exception or if task does not found
     // return empty
-    public Optional<DailyTask> getDailyTaskById(Long id) {
+    public Optional<DailyTask> findDailyTaskById(Long id) {
         return repository.findById(id);
     }
 
@@ -45,39 +45,21 @@ public class DailyTaskService {
         if (id == null) {
             return false;
         }
-
         if (!repository.existsById(id)) {
             return false;
         }
-
         repository.deleteById(id);
         return true;
     }
 
     @Transactional
     public Optional<DailyTask> updateDailyTask(Long id, DailyTask dailyTask) {
-        // if (dailyTask.getId() == null || !repository.existsById(dailyTask.getId())) {
-        //     return Optional.empty();
-        // }
-
-        // try {
-        //     DailyTask task = repository.save(dailyTask);
-        //     return Optional.of(task);
-        // } catch (DataIntegrityViolationException e) {
-        //     return Optional.empty();
-        }
+        return null;
     }
 
 
     @Transactional
     public Optional<DailyTask> updateDailyTaskByFields(Long id, Map<String, Object> fields) {
-        Optional<DailyTask> optionalTask = repository.findById(id);
-        if(optionalTask.isPresent()){
-            DailyTask dailyTask = optionalTask.get();
-            fields.forEach((key, value) -> {
-                  
-            });
-        }
         return null;
     }
 }
