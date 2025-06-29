@@ -1,16 +1,23 @@
 package by.dhashuk.daily_planner.service;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.util.ReflectionUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import by.dhashuk.daily_planner.entity.DailyTask;
 import by.dhashuk.daily_planner.repository.DailyTastRepository;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@Service
 public class DailyTaskService {
     private final DailyTastRepository repository;
 
@@ -18,29 +25,27 @@ public class DailyTaskService {
         this.repository = repository;
     }
 
-    // find task by id - if id is null throw exception or if task does not found
-    // return empty
     public Optional<DailyTask> findDailyTaskById(Long id) {
+        if (id == null) {
+        throw new IllegalArgumentException("Id must not be null");
+        }
         return repository.findById(id);
     }
 
-    // return saved task if task isExists return empty Optional
+    @Transactional
     public Optional<DailyTask> saveDailyTask(DailyTask dailyTask) {
         try {
             DailyTask task = repository.save(dailyTask);
             return Optional.of(task);
         } catch (DataIntegrityViolationException e) {
-            // логування або кастомна обробка
             return Optional.empty();
         }
     }
 
-    // return all taks or empty list
     public List<DailyTask> findAllDailyTasks() {
         return repository.findAll();
     }
 
-    // remove task by id
     @Transactional
     public boolean removeDailyTaskById(Long id) {
         if (id == null) {
@@ -53,11 +58,10 @@ public class DailyTaskService {
         return true;
     }
 
-    @Transactional
-    public boolean removeDailyTask (DailyTask dailyTask){
+    public boolean removeDailyTask(DailyTask dailyTask) {
         try {
             repository.delete(dailyTask);
-            return true;    
+            return true;
         } catch (IllegalArgumentException | OptimisticLockingFailureException e) {
             return false;
         }
@@ -65,12 +69,30 @@ public class DailyTaskService {
 
     @Transactional
     public Optional<DailyTask> updateDailyTask(Long id, DailyTask dailyTask) {
-        return null;
+        if (!repository.existsById(id)) {
+            return Optional.empty();
+        }
+        dailyTask.setId(id);
+        return Optional.of(repository.save(dailyTask));
     }
-
 
     @Transactional
     public Optional<DailyTask> updateDailyTaskByFields(Long id, Map<String, Object> fields) {
-        return null;
+       try {
+            DailyTask entity = repository.findById(id)
+                .orElseThrow();
+
+        fields.forEach((feildName, value) -> {
+            Field requiredField = ReflectionUtils.getRequiredField(DailyTask.class, feildName);
+            if (requiredField != null) {
+                requiredField.setAccessible(true);
+                ReflectionUtils.setField(requiredField, entity, value);
+                }   
+            });
+            return Optional.of(repository.save(entity));
+
+       } catch (IllegalArgumentException | NoSuchElementException e) {
+            return Optional.empty();
+       }           
     }
 }
